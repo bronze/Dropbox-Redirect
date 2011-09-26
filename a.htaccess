@@ -1,0 +1,30 @@
+Options +FollowSymlinks
+RewriteEngine on
+
+# No intersticial for direct reference and self-reference
+RewriteCond %{HTTP_REFERER} !^$
+RewriteCond %{HTTP_REFERER} !^http(s)?://sub.yoursite.com/.*$ [NC]
+# Add a line item for every website you don't need an intersticial for
+# I've added my own website, gmail and facebook
+RewriteCond %{HTTP_REFERER} !^http(s)?://([^\.]*.)?yoursite.com/.*$ [NC]
+RewriteCond %{HTTP_REFERER} !^http(s)?://mail.google.com/.*$ [NC]
+RewriteCond %{HTTP_REFERER} !^http://([^\.]*.)?facebook.com/.*$ [NC]
+# Take out P so it can work without mod_proxy
+# RewriteRule ^([^/]+)/?$ /?file=$1&referrer=%{HTTP_REFERER} [R=302,L,P]
+RewriteRule ^([^/]+)/?$ /?file=$1&referrer=%{HTTP_REFERER} [R=302,L]
+
+# This directs assets the page tries to load to dropbox.com
+RewriteCond %{REQUEST_URI} favicon [OR]
+RewriteCond %{REQUEST_URI} static/images/psychobox\.png
+RewriteRule ^(.*)$ http://www.dropbox.com/$1 [L]
+
+# This ensures that a clean load of box.leebyron.com/ goes somewhere
+RewriteCond %{REQUEST_FILENAME} index
+RewriteRule \. index.php [L]
+
+# All urls that would otherwise 404 we direct to our dropbox user account
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteCond %{REQUEST_FILENAME} !-f
+# Take out P so it can work without mod_proxy
+# RewriteRule ^(.*)$ http://dl.dropbox.com/u/YOUR_ID/$1 [P,L]
+RewriteRule ^(.*)$ http://dl.dropbox.com/u/YOUR_ID/$1 [L]
